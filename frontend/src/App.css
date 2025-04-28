@@ -1,0 +1,54 @@
+.product-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.qr-canvas {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Tùy chỉnh Navbar */
+.custom-navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1rem;
+}
+
+.custom-navbar .navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.custom-navbar .navbar-brand:hover {
+  color: #00d4ff;
+}
+
+.custom-navbar .nav-link {
+  font-size: 1.1rem;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+}
+
+.custom-navbar .nav-link:hover {
+  color: #fff;
+  background-color: #555;
+}
+
+.custom-navbar .nav-link svg {
+  margin-right: 0.5rem;
+}
+
+/* Đảm bảo responsive */
+@media (max-width: 992px) {
+  .custom-navbar .nav-link {
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+  }
+}
