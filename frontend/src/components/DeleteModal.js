@@ -5,7 +5,7 @@ import axios from "axios";
 const DeleteModal = ({ product, onClose, onDelete }) => {
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`/products/${product.id}`);
+      const response = await axios.delete(`${process.env.REACT_APP_API_URL}/products/${product.id}`);
       alert(response.data.message);
       onDelete();
       onClose();

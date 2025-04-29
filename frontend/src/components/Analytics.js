@@ -33,7 +33,7 @@ const Analytics = () => {
       setError(null);
       try {
         const response = await axios.get(
-          "/analytics/average-price-by-category"
+          `${process.env.REACT_APP_API_URL}/analytics/average-price-by-category`
         );
         const categories = response.data.map((item) => item.category_name);
         const prices = response.data.map((item) => item.average_price);

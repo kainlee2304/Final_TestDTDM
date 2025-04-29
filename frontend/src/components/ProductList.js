@@ -17,7 +17,7 @@ const ProductList = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get("/products/all");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/products/all`);
       setProducts(response.data);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách:", error);

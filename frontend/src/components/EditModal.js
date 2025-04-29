@@ -13,7 +13,7 @@ const EditModal = ({ product, onClose, onSave }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("/categories");
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/categories`);
         setCategories(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
@@ -42,7 +42,7 @@ const EditModal = ({ product, onClose, onSave }) => {
     }
 
     try {
-      const response = await axios.put(`/products/${product.id}`, formData, {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/products/${product.id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

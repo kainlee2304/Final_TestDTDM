@@ -23,7 +23,7 @@ const CategoryManager = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get("/categories");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/categories`);
       setCategories(response.data);
     } catch (error) {
       setError(
@@ -43,7 +43,7 @@ const CategoryManager = () => {
     e.preventDefault();
     if (!newCategory) return;
     try {
-      const response = await axios.post("/categories", { name: newCategory });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/categories`, { name: newCategory });
       alert(response.data.message);
       setNewCategory("");
       fetchCategories();
@@ -55,7 +55,7 @@ const CategoryManager = () => {
   const handleEditCategory = async () => {
     if (!editCategory || !editCategory.name) return;
     try {
-      const response = await axios.put(`/categories/${editCategory.id}`, {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/categories/${editCategory.id}`, {
         name: editCategory.name,
       });
       alert(response.data.message);
@@ -69,7 +69,7 @@ const CategoryManager = () => {
   const handleDeleteCategory = async () => {
     if (!deleteCategory) return;
     try {
-      const response = await axios.delete(`/categories/${deleteCategory.id}`);
+      const response = await axios.delete(`${process.env.REACT_APP_API_URL}/categories/${deleteCategory.id}`);
       alert(response.data.message);
       setDeleteCategory(null);
       fetchCategories();

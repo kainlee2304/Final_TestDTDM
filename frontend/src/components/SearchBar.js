@@ -7,8 +7,7 @@ const SearchBar = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`/products?search=${searchTerm}`);
-      // Cập nhật danh sách sản phẩm (có thể dùng context hoặc props)
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/products?search=${searchTerm}`);
       window.dispatchEvent(
         new CustomEvent("updateProducts", { detail: response.data })
       );

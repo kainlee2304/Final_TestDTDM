@@ -12,7 +12,7 @@ const ProductForm = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("/categories");
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/categories`);
         setCategories(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
@@ -32,7 +32,7 @@ const ProductForm = () => {
     }
 
     try {
-      const response = await axios.post("/products", formData, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/products`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

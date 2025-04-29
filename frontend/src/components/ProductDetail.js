@@ -14,7 +14,7 @@ const ProductDetail = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`/products/${id}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/products/${id}`);
         setProduct(response.data);
       } catch (error) {
         setError(
