@@ -4,16 +4,8 @@ const path = require("path");
 const multer = require("multer");
 const app = express();
 
-// Cấu hình multer để lưu ảnh
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
-});
+// Cấu hình multer để lưu ảnh trong bộ nhớ
+const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
@@ -28,11 +20,10 @@ const upload = multer({
       cb(new Error("Chỉ hỗ trợ file ảnh JPEG/JPG/PNG!"));
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
 });
 
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.static(path.join(__dirname, "../frontend/build")));
 
 // Tạo bảng categories nếu chưa có
@@ -56,7 +47,7 @@ pool
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       price INT NOT NULL,
-      image VARCHAR(255),
+      image BYTEA, -- Đổi từ VARCHAR(255) thành BYTEA
       category_id INT REFERENCES categories(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
@@ -189,7 +180,13 @@ app.get("/products/all", async (req, res) => {
     const result = await pool.query(
       "SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC"
     );
-    res.json(result.rows);
+    const products = result.rows.map((product) => ({
+      ...product,
+      image: product.image
+        ? `data:image/jpeg;base64,${Buffer.from(product.image).toString("base64")}`
+        : null,
+    }));
+    res.json(products);
   } catch (err) {
     console.error("Lỗi lấy danh sách sản phẩm:", err.stack);
     res.status(500).json({ error: "Lỗi server, thử lại nha!" });
@@ -210,7 +207,13 @@ app.get("/products/:id", async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Sản phẩm không tồn tại!" });
     }
-    res.json(result.rows[0]);
+    const product = {
+      ...result.rows[0],
+      image: result.rows[0].image
+        ? `data:image/jpeg;base64,${Buffer.from(result.rows[0].image).toString("base64")}`
+        : null,
+    };
+    res.json(product);
   } catch (err) {
     console.error("Lỗi lấy chi tiết sản phẩm:", err.stack);
     res.status(500).json({ error: "Lỗi server, thử lại nha!" });
@@ -224,7 +227,7 @@ app.post(
   validateProduct,
   async (req, res) => {
     const { name, price, category_id } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null;
+    const image = req.file ? req.file.buffer : null;
     try {
       const result = await pool.query(
         "INSERT INTO products (name, price, image, category_id) VALUES ($1, $2, $3, $4) RETURNING *",
@@ -234,7 +237,12 @@ app.post(
         .status(201)
         .json({
           message: "Thêm sản phẩm thành công!",
-          product: result.rows[0],
+          product: {
+            ...result.rows[0],
+            image: result.rows[0].image
+              ? `data:image/jpeg;base64,${Buffer.from(result.rows[0].image).toString("base64")}`
+              : null,
+          },
         });
     } catch (err) {
       console.error("Lỗi thêm sản phẩm:", err.stack);
@@ -243,7 +251,48 @@ app.post(
   }
 );
 
-// Route tìm kiếm sản phẩm (hỗ trợ lọc theo danh mục)
+// Route cập nhật sản phẩm
+app.put(
+  "/products/:id",
+  upload.single("image"),
+  validateProduct,
+  async (req, res) => {
+    const { id } = req.params;
+    const { name, price, category_id } = req.body;
+    const image = req.file ? req.file.buffer : null;
+    try {
+      let query, values;
+      if (image) {
+        query =
+          "UPDATE products SET name = $1, price = $2, image = $3, category_id = $4 WHERE id = $5 RETURNING *";
+        values = [name, price, image, category_id || null, id];
+      } else {
+        query =
+          "UPDATE products SET name = $1, price = $2, category_id = $3 WHERE id = $4 RETURNING *";
+        values = [name, price, category_id || null, id];
+      }
+      const result = await pool.query(query, values);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Sản phẩm không tồn tại!" });
+      }
+      const updatedProduct = {
+        ...result.rows[0],
+        image: result.rows[0].image
+          ? `data:image/jpeg;base64,${Buffer.from(result.rows[0].image).toString("base64")}`
+          : null,
+      };
+      res.json({
+        message: "Cập nhật sản phẩm thành công!",
+        product: updatedProduct,
+      });
+    } catch (err) {
+      console.error("Lỗi cập nhật sản phẩm:", err.stack);
+      res.status(500).json({ error: "Lỗi server, thử lại nha!" });
+    }
+  }
+);
+
+// Route tìm kiếm sản phẩm
 app.get("/products", async (req, res) => {
   const { search, category_id } = req.query;
   let query =
@@ -264,40 +313,18 @@ app.get("/products", async (req, res) => {
 
   try {
     const result = await pool.query(query, values);
-    res.json(result.rows);
+    const products = result.rows.map((product) => ({
+      ...product,
+      image: product.image
+        ? `data:image/jpeg;base64,${Buffer.from(product.image).toString("base64")}`
+        : null,
+    }));
+    res.json(products);
   } catch (err) {
     console.error("Lỗi tìm kiếm:", err.stack);
     res.status(500).json({ error: "Không tìm thấy gì, sorry nha!" });
   }
 });
-
-// Route cập nhật sản phẩm
-app.put(
-  "/products/:id",
-  upload.single("image"),
-  validateProduct,
-  async (req, res) => {
-    const { id } = req.params;
-    const { name, price, category_id } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : req.body.image;
-    try {
-      const result = await pool.query(
-        "UPDATE products SET name = $1, price = $2, image = $3, category_id = $4 WHERE id = $5 RETURNING *",
-        [name, price, image, category_id || null, id]
-      );
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Sản phẩm không tồn tại!" });
-      }
-      res.json({
-        message: "Cập nhật sản phẩm thành công!",
-        product: result.rows[0],
-      });
-    } catch (err) {
-      console.error("Lỗi cập nhật:", err.stack);
-      res.status(500).json({ error: "Lỗi server, thử lại nha!" });
-    }
-  }
-);
 
 // Route xóa sản phẩm
 app.delete("/products/:id", async (req, res) => {
