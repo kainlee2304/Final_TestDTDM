@@ -2,7 +2,9 @@ const express = require("express");
 const pool = require("./db");
 const path = require("path");
 const multer = require("multer");
+const cors = require("cors");
 const app = express();
+
 
 // Cấu hình multer để lưu ảnh trong bộ nhớ
 const storage = multer.memoryStorage();
@@ -22,7 +24,7 @@ const upload = multer({
   },
   limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
 });
-
+app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend/build")));
 
