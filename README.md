@@ -1,21 +1,24 @@
-
-
 ## **Configuring, Setting Up, Connecting to Database, and Deploying Product Listing Function**
 
+**Introduction**
 
+Hello everyone! My name is Nguyen. Today, I talk about our project, `Final_TestDTDM`. This is a simple app. It uses Node.js and PostgreSQL. We put it on Railway. I will show you how to set up, connect to the database, and deploy the product listing function. This function helps users see all products or search products. Let’s start!
 
-Hello everyone! My name is Nguyen. Today, I will talk about our project, `Final_TestDTDM`. This is a simple app. It uses Node.js and PostgreSQL. We deploy it on Railway. I will show you how to set up, connect to the database, and deploy the product listing function. This function helps users see all products or search for products. Let’s start!
+---
 
+**What is Product Listing Function?**
 
-First, let’s talk about the product listing function. In our app, we have two main actions for listing products:
+First, I explain the product listing function. In our app, we have two actions:
 - **See all products**: This is the `GET /products/all` API. It shows all products in the database.
 - **Search products**: This is the `GET /products` API. It finds products by name or category.
 
-These actions help users view product information like name, price, and image. Now, I will show you how to build this step by step.
+These actions help users see product information like name, price, and image. Now, I show you how to build this step by step.
+
+---
 
 **Step 1 – Set Up the Environment**
 
-First, we need to set up our computer to work on the project. Here are the steps:
+First, we set up our computer to work on the project. Here are the steps:
 
 1. **Install Node.js**:
    - Go to the Node.js website.
@@ -24,27 +27,51 @@ First, we need to set up our computer to work on the project. Here are the steps
      ```
      node -v
      ```
-   - You will see the version number, like `18.0.0`.
+   - You see the version, like `18.0.0`.
 
-2. **Create Project Folders**:
+2. **Make Project Folders**:
    - Make a folder called `Final_TestDTDM`.
-   - Inside it, make two folders: `backend` and `frontend`.
+   - Inside, make two folders: `backend` and `frontend`.
    - Go to the `backend` folder and type:
      ```
      npm init -y
      ```
    - This makes a `package.json` file.
 
-3. **Install Tools for Backend**:
-   - We need some tools to work with Node.js and PostgreSQL.
+3. **What is `package.json`?**:
+   - The `package.json` file is very important. It tells Node.js what tools we need and how to start the app.
+   - Here is my `package.json` in the `backend` folder:
+     ```
+     {
+       "name": "final_testdtdm_backend",
+       "version": "1.0.0",
+       "description": "Backend for Final_TestDTDM",
+       "main": "index.js",
+       "scripts": {
+         "start": "node index.js"
+       },
+       "dependencies": {
+         "dotenv": "^16.5.0",
+         "express": "^4.18.2",
+         "multer": "^1.4.5-lts.2",
+         "pg": "^8.11.3"
+       }
+     }
+     ```
+   - **Why is it useful?**:
+     - It has tools we need, like `express` for APIs and `pg` for the database.
+     - The `start` script (`node index.js`) helps Railway run our app.
+     - It makes sure everyone uses the same tools when they work on the project.
+
+4. **Install Tools for Backend**:
    - In the `backend` folder, type this command:
      ```
      npm install express pg
      ```
-   - `express` helps us make APIs. `pg` helps us talk to the PostgreSQL database.
+   - This installs `express` and `pg`. They are in `package.json`. `express` makes APIs. `pg` talks to the database.
 
-4. **Set Up Code Editor**:
-   - I use Visual Studio Code. It is easy to use.
+5. **Set Up Code Editor**:
+   - I use Visual Studio Code. It is easy.
    - Open the `Final_TestDTDM` folder in Visual Studio Code.
 
 ---
@@ -55,17 +82,17 @@ Next, we connect our app to the PostgreSQL database. We use Railway to make a da
 
 1. **Make Database on Railway**:
    - Go to [Railway website](https://railway.app).
-   - Sign in with your GitHub account.
+   - Sign in with GitHub.
    - Click **New Project**.
    - Click **New** > **Database** > **PostgreSQL**.
-   - Railway makes a database for you. It gives you a `DATABASE_URL`. It looks like this:
+   - Railway makes a database. It gives you a `DATABASE_URL`. It looks like this:
      ```
      postgresql://postgres:password@hostname:port/railway
      ```
 
 2. **Write Code to Connect**:
    - In the `backend` folder, make a file called `db.js`.
-   - Add this code to connect to the database:
+   - Add this code:
      ```
      const { Pool } = require("pg");
 
@@ -84,10 +111,10 @@ Next, we connect our app to the PostgreSQL database. We use Railway to make a da
 
      module.exports = pool;
      ```
-   - This code uses `pg` to connect to PostgreSQL. The `DATABASE_URL` comes from Railway. The `ssl` part makes the connection safe.
+   - This code uses `pg` from `package.json`. It connects to PostgreSQL. The `DATABASE_URL` comes from Railway. The `ssl` part makes it safe.
 
 3. **Make Tables**:
-   - In `index.js`, add code to make tables for products and categories:
+   - In `index.js`, add code to make tables:
      ```
      pool.query(`
        CREATE TABLE IF NOT EXISTS categories (
@@ -108,16 +135,16 @@ Next, we connect our app to the PostgreSQL database. We use Railway to make a da
        )
      `).then(() => console.log("Products table is ready!"));
      ```
-   - This makes two tables: `categories` for product categories and `products` for product details.
+   - This makes two tables: one for categories and one for products.
 
 ---
 
 **Step 3 – Write Code for Product Listing**
 
-Now, we write the code for the product listing function. We have two APIs: one to see all products and one to search products.
+Now, we write the code for listing products. We have two APIs: one to see all products and one to search products.
 
 1. **API to See All Products (`GET /products/all`)**:
-   - This API gets all products from the database.
+   - This API gets all products.
    - Add this code to `index.js`:
      ```
      app.get("/products/all", async (req, res) => {
@@ -138,10 +165,10 @@ Now, we write the code for the product listing function. We have two APIs: one t
        }
      });
      ```
-   - This code uses the `pool` to ask the database for all products. It joins the `products` table with the `categories` table to get the category name. The result is sent back as JSON.
+   - This code asks the database for all products. It uses `express` from `package.json` to make the API.
 
 2. **API to Search Products (`GET /products`)**:
-   - This API searches products by name or category.
+   - This API finds products by name or category.
    - Add this code to `index.js`:
      ```
      app.get("/products", async (req, res) => {
@@ -177,7 +204,7 @@ Now, we write the code for the product listing function. We have two APIs: one t
        }
      });
      ```
-   - This code searches products by name (like "áo") or category ID. It sends the matching products as JSON.
+   - This code searches products by name (like "áo"). It sends the matching products.
 
 ---
 
@@ -186,12 +213,12 @@ Now, we write the code for the product listing function. We have two APIs: one t
 Now, we put the app on Railway. Here are the steps:
 
 1. **Push Code to GitHub**:
-   - First, add a `.gitignore` file:
+   - Add a `.gitignore` file:
      ```
      node_modules/
      .env
      ```
-   - Then, push the code to GitHub:
+   - Push the code to GitHub:
      ```
      git init
      git add .
@@ -215,6 +242,7 @@ Now, we put the app on Railway. Here are the steps:
      - `NODE_ENV`: production
    - Railway adds `DATABASE_URL` automatically.
    - Click **Deploy**.
+   - Railway uses `package.json` to start the app with `npm start`.
 
 4. **Add Frontend Service**:
    - Click **Add Service** > **Empty Service**.
@@ -284,15 +312,16 @@ Finally, we test the app to see if it works.
 
 ---
 
-**Conclusion**
+**Slide 8: Conclusion**
 
 That’s all! We did these steps:
-- Set up Node.js and tools.
+- Set up Node.js and tools with `package.json`.
 - Connect to the database with `db.js`.
 - Write code for listing and searching products.
 - Deploy the app on Railway.
 - Test the app with a custom domain.
 
-The app works well. Users can see and search products easily.  ?
+The app works well. Users can see and search products easily. 
 
 ---
+
