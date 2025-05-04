@@ -22,7 +22,7 @@ First, we set up our computer to work on the project. Here are the steps:
 
 1. **Install Node.js**:
    - Go to the Node.js website.
-   - Download and install Node.js. I use version 18.
+   - Download and install Node.js. I use version 22.14.0.
    - Check if it works. Open your terminal and type:
      ```
      node -v
