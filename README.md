@@ -27,7 +27,7 @@ First, we set up our computer to work on the project. Here are the steps:
      ```
      node -v
      ```
-   - You see the version, like `18.0.0`.
+   - You see the version, like `22.14.0`.
 
 2. **Make Project Folders**:
    - Make a folder called `Final_TestDTDM`.
